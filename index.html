@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMH Savar - Dengue Intelligence System</title>
+    <style>
+        :root {
+            --bg-base: #0f172a; --bg-panel: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --accent: #38bdf8; --accent-hover: #0284c7; --danger: #ef4444; --warning: #f59e0b;
+            --success: #10b981; --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-main); padding: 2rem; line-height: 1.5; font-size: 14px; transition: 0.3s; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+        .header h1 { font-size: 1.75rem; font-weight: 600; color: white; letter-spacing: 0.5px; }
+        .header .subtitle { color: var(--text-muted); font-size: 1rem; margin-top: 5px; font-weight: 500;}
+        
+        .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;}
+        .total-badge { background: var(--danger); color: white; padding: 6px 18px; border-radius: 20px; font-weight: bold; font-size: 1.1rem; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .btn { background-color: var(--accent); color: #0f172a; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;}
+        .btn:hover { background-color: var(--accent-hover); color: white; }
+        .btn-outline { background-color: transparent; border: 2px solid var(--text-muted); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: transparent;}
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-excel { background-color: var(--success); color: white; }
+
+        /* Security Access Logic */
+        body:not(.is-admin) .admin-only { display: none !important; }
+        body.is-admin .public-only { display: none !important; }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; margin-bottom: 2rem; }
+        .month-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 15px 5px; text-align: center; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; user-select: none; }
+        .month-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .month-card.active-filter { background: var(--accent); border-color: var(--accent); transform: scale(1.05); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); }
+        .month-card.active-filter .month-name, .month-card.active-filter .month-count { color: #0f172a !important; }
+        .month-name { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; margin-bottom: 5px; letter-spacing: 0.5px;}
+        .month-count { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .month-count.zero { color: var(--border); }
+
+        .table-container { background: var(--bg-panel); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border); }
+        th { background-color: rgba(0,0,0,0.4); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap; letter-spacing: 0.5px;}
+        tr:hover { background-color: rgba(255,255,255,0.03); }
+        
+        .month-divider { background-color: rgba(56, 189, 248, 0.1); border-top: 2px solid var(--accent); }
+        .month-divider td { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; padding: 10px 15px; text-align: center;}
+        .status-dil { color: var(--danger); font-weight: bold; background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 4px; }
+        .status-sil { color: var(--warning); font-weight: bold; background: rgba(245, 158, 11, 0.1); padding: 2px 8px; border-radius: 4px; }
+
+        .actions { display: flex; gap: 12px; }
+        .action-link { color: var(--accent); cursor: pointer; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+        .action-link.delete { color: var(--danger); }
+        .action-link:hover { text-decoration: underline; }
+
+        .print-summary-section { display: none; margin-top: 40px; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-panel); padding: 2.5rem; border-radius: 8px; width: 100%; max-width: 650px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .modal-content.small { max-width: 400px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group.full-width { grid-column: span 2; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;}
+        .form-group input, .form-group select { width: 100%; padding: 10px; background: var(--bg-base); border: 1px solid var(--border); color: white; border-radius: 4px; font-size: 0.95rem;}
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; grid-column: span 2;}
+
+        @media print {
+            @page { size: legal landscape; margin: 0.5in; }
+            body { background: white !important; color: black !important; padding: 0 !important; font-size: 11pt !important; }
+            .container { max-width: 100% !important; }
+            .hide-print, .summary-grid, .btn, .controls .btn, .admin-only, .public-only { display: none !important; }
+            .header { border-bottom: 2px solid black !important; margin-bottom: 15px !important; padding-bottom: 5px !important;}
+            .header h1 { color: black !important; font-size: 18pt !important; text-align: center; width: 100%; margin-bottom: 5px;}
+            .header .subtitle { color: #333 !important; text-align: center; width: 100%; font-size: 12pt !important; margin-bottom: 10px;}
+            .controls { justify-content: center; width: 100%; margin-top: 10px;}
+            .total-badge { background: transparent !important; color: black !important; border: 1px solid black !important; }
+            .table-container { border: none !important; border-radius: 0 !important; overflow: visible !important; box-shadow: none !important; page-break-inside: auto;}
+            table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto;}
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th, td { border: 1px solid #000 !important; padding: 8px 10px !important; color: black !important; font-size: 10pt !important;}
+            th { background-color: #e2e8f0 !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left;}
+            .month-divider { background-color: #d1d5db !important; border-top: 2px solid black !important; border-bottom: 2px solid black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+            .month-divider td { color: black !important; font-size: 11pt !important; font-weight: bold !important; text-align: center !important; }
+            .status-dil, .status-sil { background: transparent !important; color: black !important; font-weight: bold !important; text-decoration: underline;}
+            .print-summary-section { display: block !important; page-break-inside: avoid; margin-top: 30px; }
+            .summary-title { font-size: 14pt; font-weight: bold; text-decoration: underline; margin-bottom: 10px; text-transform: uppercase; text-align: left; }
+            .print-summary-table { width: 50% !important; border: 2px solid black !important; border-collapse: collapse !important; }
+            .print-summary-table th, .print-summary-table td { border: 1px solid black !important; }
+            .print-summary-table th { background-color: #d1d5db !important; text-align: center !important; }
+            .print-summary-table td { text-align: center !important; font-weight: bold !important; }
+            .summary-total-row { background-color: #e2e8f0 !important; font-size: 12pt !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div style="width: 100%;">
+            <h1>DENGUE PATIENT STATE - CMH SAVAR</h1>
+            <div class="subtitle" id="reportSubtitle">Active Patient Management & Reporting Dashboard</div>
+        </div>
+        <div class="controls">
+            <div class="total-badge"><span id="filterContext">Total</span> Cases: <span id="totalCases">0</span></div>
+            
+            <!-- Export Controls (Visible to All) -->
+            <button class="btn btn-outline hide-print" onclick="window.print()">🖨️ PDF / Print</button>
+            <button class="btn btn-excel hide-print" onclick="exportToCSV()">📊 Excel</button>
+            <button class="btn btn-outline hide-print" onclick="copyTableData()">📋 Copy</button>
+
+            <!-- Admin Controls -->
+            <button class="btn btn-outline public-only hide-print" onclick="document.getElementById('loginModal').classList.add('active')">Admin Login</button>
+            <button class="btn admin-only hide-print" onclick="openPatientModal()">+ Add Record</button>
+            <button class="btn btn-danger admin-only hide-print" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="summary-grid hide-print" id="monthlySummary"></div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Mil No.</th>
+                    <th>Rank</th>
+                    <th>Patient Name</th>
+                    <th>Age</th>
+                    <th>Unit</th>
+                    <th>Place of Infection</th>
+                    <th>Admission Date</th>
+                    <th>Severity</th>
+                    <th class="admin-only hide-print">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patientTableBody">
+                <tr><td colspan="9" style="text-align:center;">Loading database...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Print Footer -->
+    <div class="print-summary-section">
+        <div class="summary-title">Reporting Summary: <span id="printSummaryTitle">Total Cases</span></div>
+        <table class="print-summary-table">
+            <thead><tr><th>Month</th><th>Total Cases</th></tr></thead>
+            <tbody id="printSummaryBody"></tbody>
+            <tfoot><tr class="summary-total-row"><td>GRAND TOTAL</td><td id="printSummaryTotal">0</td></tr></tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Data Entry Modal -->
+<div class="modal" id="patientModal">
+    <div class="modal-content">
+        <h2 id="modalTitle" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: white;">Patient Entry Protocol</h2>
+        <form id="patientForm" class="form-grid">
+            <input type="hidden" id="patientId">
+            <div class="form-group"><label>Army/Mil No.</label><input type="text" id="milNo" required></div>
+            <div class="form-group"><label>Rank</label><input type="text" id="rank" required></div>
+            <div class="form-group full-width"><label>Full Name</label><input type="text" id="name" required></div>
+            <div class="form-group"><label>Age</label><input type="text" id="age" required></div>
+            <div class="form-group"><label>Unit</label><input type="text" id="unit" required></div>
+            <div class="form-group full-width"><label>Present Residence / Probable Place of Infection</label><input type="text" id="location" required></div>
+            <div class="form-group"><label>Date of Admission</label><input type="date" id="admissionDate" required></div>
+            <div class="form-group"><label>Status / Severity</label>
+                <select id="severity">
+                    <option value="Standard">Standard / Med Wd</option>
+                    <option value="SIL">SIL</option>
+                    <option value="DIL">DIL</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('patientModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn">Save Document</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Visible Admin Login Modal -->
+<div class="modal" id="loginModal">
+    <div class="modal-content small">
+        <h2 style="margin-bottom: 20px; color: white;">Admin Authentication</h2>
+        <form id="loginForm">
+            <div class="form-group full-width">
+                <label>Admin Email</label>
+                <input type="email" id="adminEmail" required>
+            </div>
+            <div class="form-group full-width">
+                <label>Password</label>
+                <input type="password" id="adminPassword" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('loginModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn">Login</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Firebase Modular Architecture Core -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzIDh-eb4M9CXNI5CjGMr67EHgqXnby50",
+        authDomain: "dengue-patient-reports.firebaseapp.com",
+        projectId: "dengue-patient-reports",
+        storageBucket: "dengue-patient-reports.firebasestorage.app",
+        messagingSenderId: "741234404100",
+        appId: "1:741234404100:web:07205a2313ad1fa23f3e51"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let patients = [];
+    let activeMonthFilter = null;
+    const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    // --- 1. AUTHENTICATION LOGIC ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) { document.body.classList.add('is-admin'); } 
+        else { document.body.classList.remove('is-admin'); }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value;
+        const pass = document.getElementById('adminPassword').value;
+        signInWithEmailAndPassword(auth, email, pass)
+            .then(() => {
+                document.getElementById('loginModal').classList.remove('active');
+                document.getElementById('loginForm').reset();
+            })
+            .catch(error => alert("Authentication Failed: " + error.message));
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
+
+    // --- 2. REAL-TIME DATABASE LISTENER ---
+    onSnapshot(collection(db, "patients"), (snapshot) => {
+        patients = [];
+        snapshot.forEach((doc) => { patients.push({ docId: doc.id, ...doc.data() }); });
+        updateDashboard();
+    });
+
+    // --- 3. UI RENDERING ENGINE ---
+    window.toggleMonthFilter = function(monthIndex) {
+        activeMonthFilter = activeMonthFilter === monthIndex ? null : monthIndex;
+        updateDashboard();
+    };
+
+    function updateDashboard() {
+        const tbody = document.getElementById('patientTableBody');
+        const summaryDiv = document.getElementById('monthlySummary');
+        const printSummaryBody = document.getElementById('printSummaryBody');
+        
+        let absoluteMonthCounts = new Array(12).fill(0);
+        patients.forEach(p => {
+            if(p.admission) {
+                let mIndex = new Date(p.admission).getMonth();
+                if(!isNaN(mIndex)) absoluteMonthCounts[mIndex]++;
+            }
+        });
+
+        summaryDiv.innerHTML = '';
+        monthsList.forEach((month, index) => {
+            let count = absoluteMonthCounts[index];
+            let activeClass = activeMonthFilter === index ? 'active-filter' : '';
+            summaryDiv.innerHTML += `
+                <div class="month-card ${activeClass}" onclick="toggleMonthFilter(${index})">
+                    <div class="month-name">${month.substring(0,3)}</div>
+                    <div class="month-count ${count === 0 ? 'zero' : ''}">${count}</div>
+                </div>`;
+        });
+
+        let displayData = activeMonthFilter !== null ? patients.filter(p => new Date(p.admission).getMonth() === activeMonthFilter) : patients;
+        document.getElementById('filterContext').innerText = activeMonthFilter !== null ? monthsList[activeMonthFilter] : "Total";
+        displayData.sort((a, b) => new Date(a.admission) - new Date(b.admission));
+
+        tbody.innerHTML = '';
+        let currentMonthTracker = -1;
+
+        if(displayData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px;">No records found.</td></tr>'; }
+
+        displayData.forEach(p => {
+            let pDate = new Date(p.admission);
+            let pMonth = pDate.getMonth();
+            
+            if (activeMonthFilter === null && pMonth !== currentMonthTracker) {
+                tbody.innerHTML += `<tr class="month-divider no-export"><td colspan="9">${monthsList[pMonth].toUpperCase()} ${pDate.getFullYear()}</td></tr>`;
+                currentMonthTracker = pMonth;
+            }
+
+            let severityClass = p.severity === 'DIL' ? 'status-dil' : p.severity === 'SIL' ? 'status-sil' : '';
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.milNo}</td>
+                    <td>${p.rank.toUpperCase()}</td>
+                    <td style="font-weight: 700;">${p.name.toUpperCase()}</td>
+                    <td>${p.age}</td>
+                    <td>${p.unit}</td>
+                    <td>${p.location}</td>
+                    <td>${pDate.toLocaleDateString('en-GB')}</td>
+                    <td class="${severityClass}">${p.severity}</td>
+                    <td class="actions admin-only hide-print">
+                        <span class="action-link" onclick="window.editPatient('${p.docId}')">Edit</span>
+                        <span class="action-link delete" onclick="window.deletePatient('${p.docId}')">Del</span>
+                    </td>
+                </tr>`;
+        });
+
+        document.getElementById('totalCases').innerText = displayData.length;
+
+        printSummaryBody.innerHTML = '';
+        if (activeMonthFilter !== null) {
+            printSummaryBody.innerHTML = `<tr><td>${monthsList[activeMonthFilter]}</td><td>${displayData.length}</td></tr>`;
+        } else {
+            monthsList.forEach((month, index) => {
+                if(absoluteMonthCounts[index] > 0) printSummaryBody.innerHTML += `<tr><td>${month}</td><td>${absoluteMonthCounts[index]}</td></tr>`;
+            });
+        }
+        document.getElementById('printSummaryTotal').innerText = displayData.length;
+    }
+
+    // --- 4. CRUD OPERATIONS ---
+    window.openPatientModal = function(isEdit = false) {
+        document.getElementById('patientModal').classList.add('active');
+        document.getElementById('modalTitle').innerText = isEdit ? "Update Patient Record" : "Add New Patient Record";
+        if (!isEdit) document.getElementById('patientForm').reset();
+    };
+
+    document.getElementById('patientForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const docId = document.getElementById('patientId').value;
+        const recordData = {
+            milNo: document.getElementById('milNo').value, rank: document.getElementById('rank').value,
+            name: document.getElementById('name').value, age: document.getElementById('age').value,
+            unit: document.getElementById('unit').value, location: document.getElementById('location').value,
+            admission: document.getElementById('admissionDate').value, severity: document.getElementById('severity').value
+        };
+        try {
+            if (docId) { await updateDoc(doc(db, "patients", docId), recordData); } 
+            else { await addDoc(collection(db, "patients"), recordData); }
+            document.getElementById('patientModal').classList.remove('active');
+        } catch (error) { alert("Action Denied. Ensure you are logged in."); }
+    });
+
+    window.deletePatient = async function(docId) {
+        if(confirm("Confirm removal from database?")) {
+            try { await deleteDoc(doc(db, "patients", docId)); } catch(error) { alert("Access Denied."); }
+        }
+    };
+
+    window.editPatient = function(docId) {
+        const p = patients.find(x => x.docId === docId);
+        document.getElementById('patientId').value = p.docId; document.getElementById('milNo').value = p.milNo;
+        document.getElementById('rank').value = p.rank; document.getElementById('name').value = p.name;
+        document.getElementById('age').value = p.age; document.getElementById('unit').value = p.unit;
+        document.getElementById('location').value = p.location; document.getElementById('admissionDate').value = p.admission;
+        document.getElementById('severity').value = p.severity; window.openPatientModal(true);
+    };
+
+    // --- 5. EXPORT MODULES (Excel & Copy) ---
+    window.exportToCSV = function() {
+        let csv = [];
+        let rows = document.querySelectorAll("#dataTable tr");
+        for (let i = 0; i < rows.length; i++) {
+            if(rows[i].classList.contains('no-export')) continue; // Skip month dividers
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+            let colCount = document.body.classList.contains('is-admin') ? cols.length - 1 : cols.length; // Ignore actions column
+            for (let j = 0; j < colCount; j++) { row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"'); }
+            csv.push(row.join(","));
+        }
+        let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+        let downloadLink = document.createElement("a");
+        downloadLink.download = "Dengue_Report_CMH_Savar.csv";
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.click();
+    };
+
+    window.copyTableData = function() {
+        let table = document.getElementById("dataTable");
+        let range = document.createRange();
+        range.selectNode(table);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        try {
+            document.execCommand('copy');
+            alert("Table data copied to clipboard! You can now paste it into MS Word or Email.");
+        } catch (err) { alert("Unable to copy."); }
+        window.getSelection().removeAllRanges();
+    };
+</script>
+</body>
+</html>
