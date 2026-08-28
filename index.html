@@ -112,12 +112,10 @@
         <div class="controls">
             <div class="total-badge"><span id="filterContext">Total</span> Cases: <span id="totalCases">0</span></div>
             
-            <!-- Export Controls (Visible to All) -->
             <button class="btn btn-outline hide-print" onclick="window.print()">🖨️ PDF / Print</button>
             <button class="btn btn-excel hide-print" onclick="exportToCSV()">📊 Excel</button>
             <button class="btn btn-outline hide-print" onclick="copyTableData()">📋 Copy</button>
 
-            <!-- Admin Controls -->
             <button class="btn btn-outline public-only hide-print" onclick="document.getElementById('loginModal').classList.add('active')">Admin Login</button>
             <button class="btn admin-only hide-print" onclick="openPatientModal()">+ Add Record</button>
             <button class="btn btn-danger admin-only hide-print" id="logoutBtn">Logout</button>
@@ -147,7 +145,6 @@
         </table>
     </div>
 
-    <!-- Print Footer -->
     <div class="print-summary-section">
         <div class="summary-title">Reporting Summary: <span id="printSummaryTitle">Total Cases</span></div>
         <table class="print-summary-table">
@@ -179,7 +176,7 @@
                 </select>
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('patientModal').classList.remove('active')">Cancel</button>
+                <button type="button" class="btn btn-outline" onclick="window.closePatientModal()">Cancel</button>
                 <button type="submit" class="btn">Save Document</button>
             </div>
         </form>
@@ -207,7 +204,6 @@
     </div>
 </div>
 
-<!-- Firebase Modular Architecture Core -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -230,7 +226,6 @@
     let activeMonthFilter = null;
     const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    // --- 1. AUTHENTICATION LOGIC ---
     onAuthStateChanged(auth, (user) => {
         if (user) { document.body.classList.add('is-admin'); } 
         else { document.body.classList.remove('is-admin'); }
@@ -250,14 +245,12 @@
 
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
-    // --- 2. REAL-TIME DATABASE LISTENER ---
     onSnapshot(collection(db, "patients"), (snapshot) => {
         patients = [];
         snapshot.forEach((doc) => { patients.push({ docId: doc.id, ...doc.data() }); });
         updateDashboard();
     });
 
-    // --- 3. UI RENDERING ENGINE ---
     window.toggleMonthFilter = function(monthIndex) {
         activeMonthFilter = activeMonthFilter === monthIndex ? null : monthIndex;
         updateDashboard();
@@ -337,11 +330,20 @@
         document.getElementById('printSummaryTotal').innerText = displayData.length;
     }
 
-    // --- 4. CRUD OPERATIONS ---
+    // --- 4. CRUD OPERATIONS (PATCHED) ---
     window.openPatientModal = function(isEdit = false) {
         document.getElementById('patientModal').classList.add('active');
         document.getElementById('modalTitle').innerText = isEdit ? "Update Patient Record" : "Add New Patient Record";
-        if (!isEdit) document.getElementById('patientForm').reset();
+        if (!isEdit) {
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientId').value = ""; // STRATEGIC FIX: Force destroy ghost IDs
+        }
+    };
+
+    window.closePatientModal = function() {
+        document.getElementById('patientModal').classList.remove('active');
+        document.getElementById('patientForm').reset();
+        document.getElementById('patientId').value = ""; // Safety clear on cancel
     };
 
     document.getElementById('patientForm').addEventListener('submit', async (e) => {
@@ -354,9 +356,13 @@
             admission: document.getElementById('admissionDate').value, severity: document.getElementById('severity').value
         };
         try {
-            if (docId) { await updateDoc(doc(db, "patients", docId), recordData); } 
-            else { await addDoc(collection(db, "patients"), recordData); }
-            document.getElementById('patientModal').classList.remove('active');
+            if (docId) { 
+                await updateDoc(doc(db, "patients", docId), recordData); 
+            } else { 
+                await addDoc(collection(db, "patients"), recordData); 
+                activeMonthFilter = null; // STRATEGIC FIX: Reset filter to show newly added cross-month data
+            }
+            window.closePatientModal();
         } catch (error) { alert("Action Denied. Ensure you are logged in."); }
     });
 
@@ -375,14 +381,13 @@
         document.getElementById('severity').value = p.severity; window.openPatientModal(true);
     };
 
-    // --- 5. EXPORT MODULES (Excel & Copy) ---
     window.exportToCSV = function() {
         let csv = [];
         let rows = document.querySelectorAll("#dataTable tr");
         for (let i = 0; i < rows.length; i++) {
-            if(rows[i].classList.contains('no-export')) continue; // Skip month dividers
+            if(rows[i].classList.contains('no-export')) continue;
             let row = [], cols = rows[i].querySelectorAll("td, th");
-            let colCount = document.body.classList.contains('is-admin') ? cols.length - 1 : cols.length; // Ignore actions column
+            let colCount = document.body.classList.contains('is-admin') ? cols.length - 1 : cols.length;
             for (let j = 0; j < colCount; j++) { row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"'); }
             csv.push(row.join(","));
         }
