@@ -182,8 +182,8 @@
             <div class="form-group"><label>Date of Admission</label><input type="date" id="admissionDate" required></div>
             <div class="form-group"><label>Admitted Ward</label>
                 <select id="ward">
-                    <option value="Medical Ward">Medical Ward</option>
-                    <option value="Family Medical Ward">Family Medical Ward</option>
+                    <option value="Med Wd">Med Wd</option>
+                    <option value="F Med Wd">F Med Wd</option>
                     <option value="Officers Ward">Officers Ward</option>
                     <option value="Other">Other / Spec Wd</option>
                 </select>
@@ -309,7 +309,7 @@
                 currentMonthTracker = pMonth;
             }
 
-            let displayWard = p.ward || 'Medical Ward'; 
+            let displayWard = p.ward || 'Med Wd'; 
             let displayDisease = p.disease || 'Dengue Fever';
             let displaySeverity = p.severity === 'Standard' ? 'Stable' : p.severity; 
 
@@ -394,7 +394,7 @@
         document.getElementById('rank').value = p.rank; document.getElementById('name').value = p.name;
         document.getElementById('age').value = p.age; document.getElementById('unit').value = p.unit;
         document.getElementById('location').value = p.location; document.getElementById('admissionDate').value = p.admission;
-        document.getElementById('ward').value = p.ward || 'Medical Ward';
+        document.getElementById('ward').value = p.ward || 'Med Wd';
         document.getElementById('disease').value = p.disease || 'Dengue Fever';
         document.getElementById('severity').value = p.severity === 'Standard' ? 'Stable' : p.severity; 
         window.openPatientModal(true);
