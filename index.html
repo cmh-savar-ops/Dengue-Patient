@@ -42,15 +42,8 @@
 
         .table-container { background: var(--bg-panel); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-        
-        /* General constraints: lock one line for numbers/names */
-        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-        
-        /* STRATEGIC FIX: Targeted wrapping for Unit and Disease columns */
-        .col-unit { white-space: normal !important; min-width: 100px; max-width: 150px; word-wrap: break-word; line-height: 1.3; }
-        .col-disease { white-space: normal !important; min-width: 150px; max-width: 250px; word-wrap: break-word; line-height: 1.3; }
-
-        th { background-color: rgba(0,0,0,0.4); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;}
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        th { background-color: rgba(0,0,0,0.4); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; white-space: nowrap; letter-spacing: 0.5px;}
         tr:hover { background-color: rgba(255,255,255,0.03); }
         
         .month-divider { background-color: rgba(56, 189, 248, 0.1); border-top: 2px solid var(--accent); }
@@ -79,7 +72,6 @@
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; grid-column: span 3;}
 
-        /* PRINT ARCHITECTURE - Strictly enforced Legal Size */
         @media print {
             @page { size: legal landscape; margin: 0.5in; }
             body { background: white !important; color: black !important; padding: 0 !important; font-size: 10pt !important; }
@@ -90,14 +82,10 @@
             .header .subtitle { color: #333 !important; text-align: center; width: 100%; font-size: 11pt !important; margin-bottom: 10px;}
             .controls { justify-content: center; width: 100%; margin-top: 10px;}
             .total-badge { background: transparent !important; color: black !important; border: 1px solid black !important; }
-            
             .table-container { border: none !important; border-radius: 0 !important; overflow: visible !important; box-shadow: none !important; page-break-inside: auto;}
             table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; font-size: 9pt;}
             tr { page-break-inside: avoid; page-break-after: auto; }
-            
-            /* Print mode allows wrap on ALL cells to ensure it fits Legal paper */
-            th, td { border: 1px solid #000 !important; padding: 6px 8px !important; color: black !important; white-space: normal !important; word-wrap: break-word !important;} 
-            
+            th, td { border: 1px solid #000 !important; padding: 6px 8px !important; color: black !important;}
             th { background-color: #e2e8f0 !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left;}
             .month-divider { background-color: #d1d5db !important; border-top: 2px solid black !important; border-bottom: 2px solid black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
             .month-divider td { color: black !important; font-size: 10pt !important; font-weight: bold !important; text-align: center !important; }
@@ -143,11 +131,11 @@
                     <th>Rank</th>
                     <th>Patient Name</th>
                     <th>Age</th>
-                    <th class="col-unit">Unit</th>
+                    <th>Unit</th>
                     <th>Place of Infection</th>
                     <th>Admission Date</th>
                     <th>Ward</th>
-                    <th class="col-disease">Disease/Diagnosis</th>
+                    <th>Disease/Diagnosis</th>
                     <th>Condition</th>
                     <th class="admin-only hide-print">Actions</th>
                 </tr>
@@ -168,7 +156,7 @@
     </div>
 </div>
 
-<!-- Data Entry Modal -->
+<!-- Data Entry Modal (Updated Layout) -->
 <div class="modal" id="patientModal">
     <div class="modal-content">
         <h2 id="modalTitle" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: white;">Patient Entry Protocol</h2>
@@ -318,24 +306,24 @@
                 currentMonthTracker = pMonth;
             }
 
+            // Fallbacks for older data that doesn't have the new fields
             let displayWard = p.ward || 'Medical Ward'; 
             let displayDisease = p.disease || 'Dengue Fever';
             let displaySeverity = p.severity === 'Standard' ? 'Stable' : p.severity; 
 
             let severityClass = displaySeverity === 'DIL' ? 'status-dil' : displaySeverity === 'SIL' ? 'status-sil' : '';
             
-            // STRATEGIC FIX: Added .col-unit and .col-disease to targeted cells
             tbody.innerHTML += `
                 <tr>
                     <td>${p.milNo}</td>
                     <td>${p.rank.toUpperCase()}</td>
                     <td style="font-weight: 700;">${p.name.toUpperCase()}</td>
                     <td>${p.age}</td>
-                    <td class="col-unit">${p.unit}</td>
+                    <td>${p.unit}</td>
                     <td>${p.location}</td>
                     <td>${pDate.toLocaleDateString('en-GB')}</td>
                     <td>${displayWard}</td>
-                    <td class="col-disease">${displayDisease}</td>
+                    <td>${displayDisease}</td>
                     <td class="${severityClass}">${displaySeverity}</td>
                     <td class="actions admin-only hide-print">
                         <span class="action-link" onclick="window.editPatient('${p.docId}')">Edit</span>
@@ -363,7 +351,7 @@
         if (!isEdit) {
             document.getElementById('patientForm').reset();
             document.getElementById('patientId').value = "";
-            document.getElementById('disease').value = "Dengue Fever"; 
+            document.getElementById('disease').value = "Dengue Fever"; // Default value
         }
     };
 
