@@ -126,6 +126,48 @@
             .print-summary-table td { text-align: center !important; font-weight: bold !important; }
             .summary-total-row { background-color: #e2e8f0 !important; font-weight: bold !important;}
         }
+
+        /* =========================================
+           MOBILE RESPONSIVE STRATEGY (MAX-WIDTH: 768PX)
+           ========================================= */
+        @media screen and (max-width: 768px) {
+            body { padding: 0.8rem; }
+            
+            /* Header Restructure */
+            .header { flex-direction: column; text-align: center; gap: 12px; padding-bottom: 1rem; }
+            .header-left, .header-center, .header-right { min-width: 100%; justify-content: center; }
+            
+            /* Month Grid Optimization: 4 columns x 3 rows */
+            .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .month-card { padding: 8px 4px; }
+            .month-name { font-size: 0.65rem; }
+            .month-count { font-size: 1.1rem; }
+            
+            /* Badge & Buttons Adjustments */
+            .total-badge { padding: 10px 20px; font-size: 1.1rem; justify-content: center; width: 100%;}
+            .total-badge .count-num { font-size: 1.4rem; }
+            .header-right { gap: 6px; }
+            .btn { flex: 1 1 30%; font-size: 0.7rem; padding: 0.6rem; }
+
+            /* Table Horizontal Scroll Strategy */
+            .table-container { 
+                overflow-x: auto; 
+                -webkit-overflow-scrolling: touch; 
+                box-shadow: inset -15px 0px 15px -15px rgba(56, 189, 248, 0.4); 
+            }
+            th, td { 
+                white-space: nowrap !important; /* Forces data in a single line */
+                word-wrap: normal !important;
+                padding: 8px 12px; 
+            }
+            
+            /* Modal Form Restructure: Single Column */
+            .form-grid { grid-template-columns: 1fr; gap: 10px; }
+            .form-group.full-width, .form-group.two-thirds { grid-column: span 1; }
+            .modal-content { padding: 1.5rem 1rem; margin: 10px; max-height: 90vh; }
+            .modal-actions { grid-column: span 1; flex-direction: column; gap: 8px; }
+            .modal-actions .btn { width: 100%; margin: 0; }
+        }
     </style>
 </head>
 <body>
