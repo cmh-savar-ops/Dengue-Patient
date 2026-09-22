@@ -8,40 +8,46 @@
         :root {
             --bg-base: #0f172a; --bg-panel: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
             --accent: #38bdf8; --accent-hover: #0284c7; --danger: #ef4444; --warning: #f59e0b;
-            --success: #10b981; --word-blue: #2563eb; --border: #334155;
+            --success: #10b981; --word-blue: #2563eb; --border: #334155; --discharged: #64748b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-base); color: var(--text-main); padding: 1.5rem; line-height: 1.4; font-size: 13px; transition: 0.3s; }
         .container { max-width: 100%; margin: 0 auto; padding: 0 10px; }
         
-        /* COMMAND UI RESTRUCTURE */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; flex-wrap: wrap; gap: 15px;}
-        .header-left { flex: 1; min-width: 300px; }
-        .header-center { flex: 1; display: flex; justify-content: center; min-width: 250px; }
-        .header-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 350px;}
-
-        .header h1 { font-size: 1.5rem; font-weight: 600; color: white; letter-spacing: 0.5px; margin-bottom: 5px;}
-        .header .subtitle { color: var(--text-muted); font-size: 0.9rem; font-weight: 500;}
-        
-        /* HIGHLIGHTED TOTAL BADGE */
-        .total-badge { 
-            background: linear-gradient(135deg, var(--danger), #be123c); 
-            color: white; 
-            padding: 12px 30px; 
-            border-radius: 50px; 
-            font-weight: 900; 
-            font-size: 1.4rem; 
-            border: 2px solid rgba(255,255,255,0.2); 
-            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* STICKY TOP ARCHITECTURE */
+        .sticky-top-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background-color: var(--bg-base);
+            padding-top: 5px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
         }
-        .total-badge .count-num { color: #fde047; font-size: 1.8rem; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 15px;}
+        .header-left { flex: 1; min-width: 250px; }
+        .header-center { flex: 1.5; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 320px; }
+        .header-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 300px;}
+
+        .header h1 { font-size: 1.3rem; font-weight: 600; color: white; letter-spacing: 0.5px; margin-bottom: 3px;}
+        .header .subtitle { color: var(--text-muted); font-size: 0.85rem; font-weight: 500;}
         
-        .btn { background-color: var(--accent); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;}
+        /* DUAL COUNTER BADGES */
+        .metric-badge { 
+            background: linear-gradient(135deg, var(--danger), #be123c); 
+            color: white; padding: 8px 16px; border-radius: 30px; font-weight: 800; font-size: 0.9rem; 
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            text-transform: uppercase; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .metric-badge.admitted-badge {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+        .metric-badge .count-num { color: #fde047; font-size: 1.1rem; }
+        
+        .btn { background-color: var(--accent); color: #0f172a; border: none; padding: 0.45rem 0.9rem; border-radius: 4px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;}
         .btn:hover { background-color: var(--accent-hover); color: white; }
         .btn-outline { background-color: transparent; border: 2px solid var(--text-muted); color: var(--text-main); }
         .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: transparent;}
@@ -52,36 +58,61 @@
         body:not(.is-admin) .admin-only { display: none !important; }
         body.is-admin .public-only { display: none !important; }
 
-        .summary-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; margin-bottom: 1.5rem; }
-        .month-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 10px 5px; text-align: center; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; user-select: none; }
-        .month-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .month-card.active-filter { background: var(--accent); border-color: var(--accent); transform: scale(1.05); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); }
-        .month-card.active-filter .month-name, .month-card.active-filter .month-count { color: #0f172a !important; }
-        .month-name { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; margin-bottom: 3px;}
-        .month-count { font-size: 1.25rem; font-weight: bold; color: var(--accent); }
-        .month-count.zero { color: var(--border); }
-
-        .table-container { background: var(--bg-panel); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; table-layout: auto; }
+        .dashboard-controls { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+        .control-left-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         
+        .active-filter-btn { background: var(--warning); color: #000; font-size: 0.85rem; padding: 8px 15px; border-radius: 6px; border: 2px solid #b45309; font-weight: 800; cursor: pointer; }
+        .active-filter-btn:hover { background: #b45309; color: white; }
+        .active-filter-btn.selected { background: #b45309; color: white; border-color: white; transform: scale(1.02); }
+
+        .year-select { background: var(--bg-base); color: var(--accent); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
+        .search-input { background: var(--bg-base); color: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; width: 220px; }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+
+        .summary-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+        .month-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 6px 10px; text-align: center; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; user-select: none; }
+        .month-card:hover { border-color: var(--accent); }
+        .month-card.active-filter { background: var(--accent); border-color: var(--accent); box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4); }
+        .month-card.active-filter .month-name, .month-card.active-filter .month-count { color: #0f172a !important; }
+        .month-name { color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px;}
+        .month-count { font-size: 1rem; font-weight: bold; color: var(--accent); }
+
+        /* DOUBLE STICKY TABLE HEADER */
+        .table-container { background: var(--bg-panel); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); max-height: 72vh; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; table-layout: auto; }
         th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); word-wrap: break-word; white-space: normal; line-height: 1.3;}
         
-        th { background-color: rgba(0,0,0,0.4); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;}
+        thead th { 
+            position: sticky; 
+            top: 0; 
+            background-color: #1e293b; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 0.5px; 
+            z-index: 10; 
+            box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+        }
+        
         tr:hover { background-color: rgba(255,255,255,0.03); }
         
         .month-divider { background-color: rgba(56, 189, 248, 0.1); border-top: 2px solid var(--accent); }
-        .month-divider td { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; padding: 8px 15px; text-align: center;}
-        .status-dil { color: var(--danger); font-weight: bold; background: rgba(239, 68, 68, 0.1); padding: 2px 6px; border-radius: 4px; }
-        .status-sil { color: var(--warning); font-weight: bold; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .month-divider td { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; padding: 6px 15px; text-align: center;}
+        
+        .status-badge { padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
+        .badge-dil { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-sil { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-admitted { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .badge-discharged { background: rgba(100, 116, 139, 0.2); color: var(--discharged); border: 1px dashed var(--discharged); }
 
-        .actions { display: flex; gap: 8px; }
-        .action-link { color: var(--accent); cursor: pointer; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-link { color: var(--accent); cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
         .action-link.delete { color: var(--danger); }
+        .action-link.discharge { color: var(--warning); }
         .action-link:hover { text-decoration: underline; }
 
-        .print-summary-section { display: none; margin-top: 30px; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
         .modal-content { background: var(--bg-panel); padding: 2rem; border-radius: 8px; width: 100%; max-width: 800px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); max-height: 90vh; overflow-y: auto;}
         .modal-content.small { max-width: 400px; }
@@ -95,110 +126,73 @@
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; grid-column: span 3;}
 
-        /* PRINT ARCHITECTURE - ULTRA COMPACT */
+        /* PRINT ARCHITECTURE */
         @media print {
             @page { size: legal landscape; margin: 0.3in; }
             body { background: white !important; color: black !important; padding: 0 !important; font-size: 9pt !important; line-height: 1.1 !important; }
             .container { max-width: 100% !important; padding: 0 !important; }
-            .hide-print, .summary-grid, .btn, .controls .btn, .admin-only, .public-only, .header-center { display: none !important; }
+            .sticky-top-wrapper { position: static !important; background: transparent !important; border: none !important; margin-bottom: 5px !important; }
+            .hide-print, .dashboard-controls, .btn, .controls .btn, .admin-only, .public-only, .header-center { display: none !important; }
             
-            .header { border-bottom: 2px solid black !important; margin-bottom: 10px !important; padding-bottom: 5px !important; display: block !important;}
+            .header { border-bottom: 2px solid black !important; margin-bottom: 5px !important; padding-bottom: 2px !important; display: block !important;}
             .header-left { width: 100% !important; text-align: center !important;}
-            .header h1 { color: black !important; font-size: 14pt !important; text-align: center; width: 100%; margin-bottom: 2px;}
-            .header .subtitle { color: #333 !important; text-align: center; width: 100%; font-size: 10pt !important; margin-bottom: 5px;}
+            .header h1 { color: black !important; font-size: 13pt !important; text-align: center; width: 100%; margin-bottom: 2px;}
             
-            .table-container { border: none !important; border-radius: 0 !important; overflow: visible !important; box-shadow: none !important; margin-bottom: 0 !important;}
-            table { border-collapse: collapse !important; width: 100% !important; font-size: 8.5pt !important; margin-bottom: 0 !important;}
+            .table-container { border: none !important; border-radius: 0 !important; overflow: visible !important; max-height: none !important; box-shadow: none !important;}
+            table { border-collapse: collapse !important; width: 100% !important; font-size: 8.5pt !important;}
             tr { page-break-inside: avoid; page-break-after: auto; }
-            
             th, td { border: 1px solid #000 !important; padding: 3px 4px !important; color: black !important; white-space: normal !important; word-wrap: break-word !important; line-height: 1.1 !important;} 
-            
-            th { background-color: #e2e8f0 !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left; font-size: 8pt !important;}
+            thead th { position: static !important; background-color: #e2e8f0 !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left; font-size: 8pt !important;}
             .month-divider { background-color: #d1d5db !important; border-top: 2px solid black !important; border-bottom: 2px solid black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
             .month-divider td { color: black !important; font-size: 9pt !important; font-weight: bold !important; text-align: center !important; padding: 4px !important;}
-            .status-dil, .status-sil { background: transparent !important; color: black !important; font-weight: bold !important; text-decoration: underline;}
-            
-            .print-summary-section { display: block !important; page-break-inside: avoid; margin-top: 15px; }
-            .summary-title { font-size: 10pt; font-weight: bold; text-decoration: underline; margin-bottom: 5px; text-transform: uppercase; text-align: left; }
-            .print-summary-table { width: 30% !important; border: 1px solid black !important; border-collapse: collapse !important; font-size: 8pt !important;}
-            .print-summary-table th, .print-summary-table td { border: 1px solid black !important; padding: 3px !important;}
-            .print-summary-table th { background-color: #d1d5db !important; text-align: center !important; }
-            .print-summary-table td { text-align: center !important; font-weight: bold !important; }
-            .summary-total-row { background-color: #e2e8f0 !important; font-weight: bold !important;}
-        }
-
-        /* =========================================
-           MOBILE RESPONSIVE STRATEGY (MAX-WIDTH: 768PX)
-           ========================================= */
-        @media screen and (max-width: 768px) {
-            body { padding: 0.8rem; }
-            
-            /* Header Restructure */
-            .header { flex-direction: column; text-align: center; gap: 12px; padding-bottom: 1rem; }
-            .header-left, .header-center, .header-right { min-width: 100%; justify-content: center; }
-            
-            /* Month Grid Optimization: 4 columns x 3 rows */
-            .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-            .month-card { padding: 8px 4px; }
-            .month-name { font-size: 0.65rem; }
-            .month-count { font-size: 1.1rem; }
-            
-            /* Badge & Buttons Adjustments */
-            .total-badge { padding: 10px 20px; font-size: 1.1rem; justify-content: center; width: 100%;}
-            .total-badge .count-num { font-size: 1.4rem; }
-            .header-right { gap: 6px; }
-            .btn { flex: 1 1 30%; font-size: 0.7rem; padding: 0.6rem; }
-
-            /* Table Horizontal Scroll Strategy */
-            .table-container { 
-                overflow-x: auto; 
-                -webkit-overflow-scrolling: touch; 
-                box-shadow: inset -15px 0px 15px -15px rgba(56, 189, 248, 0.4); 
-            }
-            th, td { 
-                white-space: nowrap !important; /* Forces data in a single line */
-                word-wrap: normal !important;
-                padding: 8px 12px; 
-            }
-            
-            /* Modal Form Restructure: Single Column */
-            .form-grid { grid-template-columns: 1fr; gap: 10px; }
-            .form-group.full-width, .form-group.two-thirds { grid-column: span 1; }
-            .modal-content { padding: 1.5rem 1rem; margin: 10px; max-height: 90vh; }
-            .modal-actions { grid-column: span 1; flex-direction: column; gap: 8px; }
-            .modal-actions .btn { width: 100%; margin: 0; }
+            .status-badge { border: none !important; background: transparent !important; color: black !important; padding: 0 !important; font-weight: bold !important;}
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="header-left">
-            <h1>DENGUE PATIENT STATE - CMH SAVAR</h1>
-            <div class="subtitle" id="reportSubtitle">Active Patient Management & Reporting Dashboard</div>
-        </div>
-        
-        <!-- NEW CENTERED HIGHLIGHTED BADGE -->
-        <div class="header-center hide-print">
-            <div class="total-badge">
-                <span id="filterContext">Total</span> Cases: <span class="count-num" id="totalCases">0</span>
+    <!-- STICKY TOP CONTAINER -->
+    <div class="sticky-top-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <h1>DENGUE PATIENT STATE - CMH SAVAR</h1>
+                <div class="subtitle">Active Patient Management & Reporting Dashboard</div>
+            </div>
+            
+            <div class="header-center hide-print">
+                <div class="metric-badge admitted-badge">
+                    Admitted: <span class="count-num" id="globalAdmittedCount">0</span>
+                </div>
+                <div class="metric-badge">
+                    <span id="filterContext">Total</span> Cases: <span class="count-num" id="totalCases">0</span>
+                </div>
+            </div>
+
+            <div class="header-right controls">
+                <button class="btn btn-outline hide-print" onclick="window.print()">🖨️ Print</button>
+                <button class="btn btn-word hide-print" onclick="exportToWord()">📄 Word</button>
+                <button class="btn btn-excel hide-print" onclick="exportToCSV()">📊 Excel</button>
+                
+                <button class="btn btn-outline public-only hide-print" onclick="document.getElementById('loginModal').classList.add('active')">Admin Login</button>
+                <button class="btn admin-only hide-print" onclick="openPatientModal()">+ Add Record</button>
+                <button class="btn btn-danger admin-only hide-print" id="logoutBtn">Logout</button>
             </div>
         </div>
 
-        <div class="header-right controls">
-            <button class="btn btn-outline hide-print" onclick="window.print()">🖨️ Print</button>
-            <button class="btn btn-word hide-print" onclick="exportToWord()">📄 Word</button>
-            <button class="btn btn-excel hide-print" onclick="exportToCSV()">📊 Excel</button>
-            
-            <button class="btn btn-outline public-only hide-print" onclick="document.getElementById('loginModal').classList.add('active')">Admin Login</button>
-            <button class="btn admin-only hide-print" onclick="openPatientModal()">+ Add Record</button>
-            <button class="btn btn-danger admin-only hide-print" id="logoutBtn">Logout</button>
+        <div class="dashboard-controls hide-print">
+            <div class="control-left-group">
+                <button class="btn active-filter-btn" id="btnCurrentlyAdmitted" onclick="toggleActiveFilter()">🏥 CURRENTLY ADMITTED</button>
+                <select id="yearSelector" class="year-select" onchange="changeYearFilter()">
+                    <!-- Years will be populated dynamically -->
+                </select>
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search patient, mil no, unit..." onkeyup="handleSearch()">
+            </div>
+            <div class="summary-grid" id="monthlySummary"></div>
         </div>
     </div>
 
-    <div class="summary-grid hide-print" id="monthlySummary"></div>
-
+    <!-- DATA TABLE CONTAINER -->
     <div class="table-container">
         <table id="dataTable">
             <thead>
@@ -210,25 +204,18 @@
                     <th>Age</th>
                     <th>Unit</th>
                     <th>Place of Infection</th>
-                    <th>Admission Date</th>
+                    <th>Adm. Date</th>
                     <th>Ward</th>
                     <th>Disease/Diagnosis</th>
                     <th>Condition</th>
+                    <th>Status</th>
+                    <th class="admin-only hide-print">Disch. Date</th>
                     <th class="admin-only hide-print">Actions</th>
                 </tr>
             </thead>
             <tbody id="patientTableBody">
-                <tr><td colspan="12" style="text-align:center;">Loading database...</td></tr>
+                <tr><td colspan="14" style="text-align:center;">Loading database...</td></tr>
             </tbody>
-        </table>
-    </div>
-
-    <div class="print-summary-section">
-        <div class="summary-title">Reporting Summary: <span id="printSummaryTitle">Total Cases</span></div>
-        <table class="print-summary-table">
-            <thead><tr><th>Month</th><th>Total Cases</th></tr></thead>
-            <tbody id="printSummaryBody"></tbody>
-            <tfoot><tr class="summary-total-row"><td>GRAND TOTAL</td><td id="printSummaryTotal">0</td></tr></tfoot>
         </table>
     </div>
 </div>
@@ -255,7 +242,7 @@
                     <option value="Medical Ward">Medical Ward</option>
                     <option value="Family Medical Ward">Family Medical Ward</option>
                     <option value="Officers Ward">Officers Ward</option>
-                    <option value="Officers Ward">Child Ward</option>
+                    <option value="Child Ward">Child Ward</option>
                     <option value="Other">Other / Spec Wd</option>
                 </select>
             </div>
@@ -268,7 +255,17 @@
             </div>
 
             <div class="form-group full-width"><label>Disease / Diagnosis (Include Co-morbidities)</label>
-                <input type="text" id="disease" placeholder="e.g., Dengue Fever + HTN + DM" value="Dengue Fever" required>
+                <input type="text" id="disease" value="Dengue Fever" required>
+            </div>
+
+            <div class="form-group"><label>Current Status</label>
+                <select id="currentStatus">
+                    <option value="Admitted">Admitted</option>
+                    <option value="Discharged">Discharged</option>
+                </select>
+            </div>
+            <div class="form-group two-thirds"><label>Discharge Date (If applicable)</label>
+                <input type="date" id="dischargeDate">
             </div>
 
             <div class="modal-actions">
@@ -279,7 +276,7 @@
     </div>
 </div>
 
-<!-- Visible Admin Login Modal -->
+<!-- Admin Login Modal -->
 <div class="modal" id="loginModal">
     <div class="modal-content small">
         <h2 style="margin-bottom: 20px; color: white;">Admin Authentication</h2>
@@ -296,7 +293,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -313,8 +310,21 @@
     const auth = getAuth(app);
 
     let patients = [];
-    let activeMonthFilter = null;
-    const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let activeMonthFilter = null; 
+    let showOnlyAdmitted = false; 
+    let selectedYear = new Date().getFullYear().toString();
+
+    const getMonthKey = (dateStr) => {
+        const d = new Date(dateStr);
+        if(isNaN(d)) return null;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    };
+
+    const getMonthName = (monthKey) => {
+        const [year, month] = monthKey.split('-');
+        const d = new Date(year, parseInt(month) - 1, 1);
+        return `${d.toLocaleString('default', { month: 'short' })} '${year.substring(2)}`;
+    };
 
     onAuthStateChanged(auth, (user) => {
         if (user) { document.body.classList.add('is-admin'); } 
@@ -330,63 +340,160 @@
 
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
-    onSnapshot(collection(db, "patients"), (snapshot) => {
+    const patientQuery = query(collection(db, "patients"), orderBy("admission", "desc"), limit(600));
+
+    onSnapshot(patientQuery, (snapshot) => {
         patients = [];
-        snapshot.forEach((doc) => { patients.push({ docId: doc.id, ...doc.data() }); });
+        snapshot.forEach((doc) => { 
+            let data = doc.data();
+            if(!data.status) data.status = 'Admitted'; 
+            patients.push({ docId: doc.id, ...data }); 
+        });
+        updateYearDropdowns();
         updateDashboard();
     });
 
-    window.toggleMonthFilter = function(monthIndex) {
-        activeMonthFilter = activeMonthFilter === monthIndex ? null : monthIndex;
+    function updateYearDropdowns() {
+        let years = new Set();
+        let currentYr = new Date().getFullYear().toString();
+        years.add(currentYr);
+        
+        patients.forEach(p => {
+            if(p.admission) {
+                let yr = new Date(p.admission).getFullYear();
+                if(!isNaN(yr)) years.add(yr.toString());
+            }
+        });
+
+        let sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a));
+        let yearSelect = document.getElementById('yearSelector');
+        let currentVal = yearSelect.value || selectedYear;
+        
+        yearSelect.innerHTML = '';
+        sortedYears.forEach(yr => {
+            yearSelect.innerHTML += `<option value="${yr}">${yr}</option>`;
+        });
+        
+        if(sortedYears.includes(currentVal)) {
+            yearSelect.value = currentVal;
+            selectedYear = currentVal;
+        } else {
+            selectedYear = sortedYears[0];
+            yearSelect.value = selectedYear;
+        }
+    }
+
+    window.changeYearFilter = function() {
+        selectedYear = document.getElementById('yearSelector').value;
+        activeMonthFilter = null;
+        showOnlyAdmitted = false;
+        document.getElementById('btnCurrentlyAdmitted').classList.remove('selected');
+        updateDashboard();
+    };
+
+    window.toggleActiveFilter = function() {
+        showOnlyAdmitted = !showOnlyAdmitted;
+        if(showOnlyAdmitted) activeMonthFilter = null; 
+        document.getElementById('btnCurrentlyAdmitted').classList.toggle('selected', showOnlyAdmitted);
+        updateDashboard();
+    };
+
+    window.toggleMonthFilter = function(monthKey) {
+        activeMonthFilter = activeMonthFilter === monthKey ? null : monthKey;
+        if(activeMonthFilter) {
+            showOnlyAdmitted = false; 
+            document.getElementById('btnCurrentlyAdmitted').classList.remove('selected');
+        }
+        updateDashboard();
+    };
+
+    window.handleSearch = function() {
         updateDashboard();
     };
 
     function updateDashboard() {
         const tbody = document.getElementById('patientTableBody');
         const summaryDiv = document.getElementById('monthlySummary');
-        const printSummaryBody = document.getElementById('printSummaryBody');
         
-        let absoluteMonthCounts = new Array(12).fill(0);
-        patients.forEach(p => {
-            if(p.admission) {
-                let mIndex = new Date(p.admission).getMonth();
-                if(!isNaN(mIndex)) absoluteMonthCounts[mIndex]++;
-            }
+        // Calculate Global Admitted Count
+        let totalAdmittedGlobal = patients.filter(p => p.status === 'Admitted').length;
+        document.getElementById('globalAdmittedCount').innerText = totalAdmittedGlobal;
+
+        // Filter by Year for monthly cards
+        let yearFilteredPatients = patients.filter(p => {
+            if(!p.admission) return false;
+            return new Date(p.admission).getFullYear().toString() === selectedYear;
         });
 
+        let monthCounts = {};
+        yearFilteredPatients.forEach(p => {
+            let mKey = getMonthKey(p.admission);
+            if(mKey) { monthCounts[mKey] = (monthCounts[mKey] || 0) + 1; }
+        });
+
+        let sortedMonths = Object.keys(monthCounts).sort((a, b) => b.localeCompare(a));
         summaryDiv.innerHTML = '';
-        monthsList.forEach((month, index) => {
-            let count = absoluteMonthCounts[index];
-            let activeClass = activeMonthFilter === index ? 'active-filter' : '';
-            summaryDiv.innerHTML += `<div class="month-card ${activeClass}" onclick="toggleMonthFilter(${index})"><div class="month-name">${month.substring(0,3)}</div><div class="month-count ${count === 0 ? 'zero' : ''}">${count}</div></div>`;
+        
+        sortedMonths.forEach(mKey => {
+            let count = monthCounts[mKey];
+            let activeClass = activeMonthFilter === mKey ? 'active-filter' : '';
+            let displayName = getMonthName(mKey);
+            summaryDiv.innerHTML += `<div class="month-card ${activeClass}" onclick="toggleMonthFilter('${mKey}')"><div class="month-name">${displayName}</div><div class="month-count">${count}</div></div>`;
         });
 
-        let displayData = activeMonthFilter !== null ? patients.filter(p => new Date(p.admission).getMonth() === activeMonthFilter) : patients;
-        document.getElementById('filterContext').innerText = activeMonthFilter !== null ? monthsList[activeMonthFilter] : "Total";
+        let displayData = patients;
+        if (showOnlyAdmitted) {
+            displayData = patients.filter(p => p.status === 'Admitted');
+            document.getElementById('filterContext').innerText = "Admitted";
+        } else if (activeMonthFilter !== null) {
+            displayData = yearFilteredPatients.filter(p => getMonthKey(p.admission) === activeMonthFilter);
+            document.getElementById('filterContext').innerText = getMonthName(activeMonthFilter);
+        } else {
+            displayData = yearFilteredPatients;
+            document.getElementById('filterContext').innerText = selectedYear;
+        }
+
+        // Apply Real-time Search Filter
+        let searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+        if(searchQuery) {
+            displayData = displayData.filter(p => {
+                return (p.name && p.name.toLowerCase().includes(searchQuery)) ||
+                       (p.milNo && p.milNo.toLowerCase().includes(searchQuery)) ||
+                       (p.rank && p.rank.toLowerCase().includes(searchQuery)) ||
+                       (p.unit && p.unit.toLowerCase().includes(searchQuery)) ||
+                       (p.location && p.location.toLowerCase().includes(searchQuery));
+            });
+        }
+            
         displayData.sort((a, b) => new Date(a.admission) - new Date(b.admission));
 
         tbody.innerHTML = '';
-        let currentMonthTracker = -1;
-        let serialNumber = 1; // Start SL
+        let currentMonthTracker = null;
+        let serialNumber = 1;
 
-        if(displayData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px;">No records found.</td></tr>'; }
+        if(displayData.length === 0) { tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; padding:20px;">No records found.</td></tr>'; }
 
         displayData.forEach(p => {
             let pDate = new Date(p.admission);
-            let pMonth = pDate.getMonth();
+            let pMonthKey = getMonthKey(p.admission);
             
-            // STRATEGIC FIX: Reset SL on new month block
-            if (activeMonthFilter === null && pMonth !== currentMonthTracker) {
-                tbody.innerHTML += `<tr class="month-divider no-export"><td colspan="12">${monthsList[pMonth].toUpperCase()} ${pDate.getFullYear()}</td></tr>`;
-                currentMonthTracker = pMonth;
+            if (!showOnlyAdmitted && activeMonthFilter === null && !searchQuery && pMonthKey !== currentMonthTracker) {
+                let headerName = getMonthName(pMonthKey).toUpperCase();
+                tbody.innerHTML += `<tr class="month-divider no-export"><td colspan="14">${headerName}</td></tr>`;
+                currentMonthTracker = pMonthKey;
                 serialNumber = 1; 
             }
 
-            let displayWard = p.ward || 'Medical Ward'; 
-            let displayDisease = p.disease || 'Dengue Fever';
             let displaySeverity = p.severity === 'Standard' ? 'Stable' : p.severity; 
-            let severityClass = displaySeverity === 'DIL' ? 'status-dil' : displaySeverity === 'SIL' ? 'status-sil' : '';
+            let severityClass = displaySeverity === 'DIL' ? 'badge-dil' : displaySeverity === 'SIL' ? 'badge-sil' : '';
             
+            let statusBadge = p.status === 'Discharged' ? 'badge-discharged' : 'badge-admitted';
+            let dischDateStr = (p.status === 'Discharged' && p.dischargeDate) ? new Date(p.dischargeDate).toLocaleDateString('en-GB') : '-';
+
+            let dischargeActionHTML = p.status === 'Admitted' 
+                ? `<span class="action-link discharge" onclick="window.quickDischarge('${p.docId}')">Discharge</span>`
+                : '';
+
             tbody.innerHTML += `
                 <tr>
                     <td>${serialNumber++}</td>
@@ -397,27 +504,20 @@
                     <td>${p.unit}</td>
                     <td>${p.location}</td>
                     <td>${pDate.toLocaleDateString('en-GB')}</td>
-                    <td>${displayWard}</td>
-                    <td>${displayDisease}</td>
-                    <td class="${severityClass}">${displaySeverity}</td>
+                    <td>${p.ward || 'Medical Ward'}</td>
+                    <td>${p.disease || 'Dengue Fever'}</td>
+                    <td><span class="status-badge ${severityClass}">${displaySeverity}</span></td>
+                    <td><span class="status-badge ${statusBadge}">${p.status.toUpperCase()}</span></td>
+                    <td class="admin-only hide-print">${dischDateStr}</td>
                     <td class="actions admin-only hide-print">
                         <span class="action-link" onclick="window.editPatient('${p.docId}')">Edit</span>
+                        ${dischargeActionHTML}
                         <span class="action-link delete" onclick="window.deletePatient('${p.docId}')">Del</span>
                     </td>
                 </tr>`;
         });
 
         document.getElementById('totalCases').innerText = displayData.length;
-
-        printSummaryBody.innerHTML = '';
-        if (activeMonthFilter !== null) {
-            printSummaryBody.innerHTML = `<tr><td>${monthsList[activeMonthFilter]}</td><td>${displayData.length}</td></tr>`;
-        } else {
-            monthsList.forEach((month, index) => {
-                if(absoluteMonthCounts[index] > 0) printSummaryBody.innerHTML += `<tr><td>${month}</td><td>${absoluteMonthCounts[index]}</td></tr>`;
-            });
-        }
-        document.getElementById('printSummaryTotal').innerText = displayData.length;
     }
 
     window.openPatientModal = function(isEdit = false) {
@@ -427,33 +527,77 @@
             document.getElementById('patientForm').reset();
             document.getElementById('patientId').value = "";
             document.getElementById('disease').value = "Dengue Fever"; 
+            document.getElementById('currentStatus').value = "Admitted";
+            document.getElementById('dischargeDate').value = "";
+            document.getElementById('admissionDate').value = new Date().toISOString().split('T')[0];
         }
     };
 
     window.closePatientModal = function() {
         document.getElementById('patientModal').classList.remove('active');
-        document.getElementById('patientForm').reset();
-        document.getElementById('patientId').value = "";
     };
+
+    document.getElementById('currentStatus').addEventListener('change', function(e) {
+        if(e.target.value === 'Admitted') {
+            document.getElementById('dischargeDate').value = '';
+        }
+    });
 
     document.getElementById('patientForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const docId = document.getElementById('patientId').value;
+        const milNoVal = document.getElementById('milNo').value.trim();
+        const rankVal = document.getElementById('rank').value.trim().toLowerCase();
+        const statusVal = document.getElementById('currentStatus').value;
+        let dischDateVal = document.getElementById('dischargeDate').value;
+        
+        if(statusVal === 'Discharged' && !dischDateVal) {
+            alert("Please select a Discharge Date.");
+            return;
+        }
+        if(statusVal === 'Admitted') dischDateVal = "";
+
+        // Smart Duplicate Check: Prevent duplicate entry if same Mil No & Rank is currently Admitted
+        if (statusVal === 'Admitted') {
+            let duplicateFound = patients.some(p => {
+                return p.docId !== docId &&
+                       p.milNo.trim() === milNoVal &&
+                       p.rank.trim().toLowerCase() === rankVal &&
+                       p.status === 'Admitted';
+            });
+            if (duplicateFound) {
+                alert("DUPLICATE ENTRY BLOCKED: This Mil No & Rank is already currently admitted in the hospital!");
+                return;
+            }
+        }
+
         const recordData = {
-            milNo: document.getElementById('milNo').value, rank: document.getElementById('rank').value,
+            milNo: milNoVal, rank: document.getElementById('rank').value,
             name: document.getElementById('name').value, age: document.getElementById('age').value,
             unit: document.getElementById('unit').value, location: document.getElementById('location').value,
             admission: document.getElementById('admissionDate').value, 
-            ward: document.getElementById('ward').value,
-            disease: document.getElementById('disease').value,
-            severity: document.getElementById('severity').value
+            ward: document.getElementById('ward').value, disease: document.getElementById('disease').value,
+            severity: document.getElementById('severity').value,
+            status: statusVal, dischargeDate: dischDateVal
         };
         try {
             if (docId) { await updateDoc(doc(db, "patients", docId), recordData); } 
-            else { await addDoc(collection(db, "patients"), recordData); activeMonthFilter = null; }
+            else { await addDoc(collection(db, "patients"), recordData); }
             window.closePatientModal();
-        } catch (error) { alert("Action Denied. Ensure you are logged in."); }
+        } catch (error) { alert("Action Denied. Ensure you are logged in as admin."); }
     });
+
+    window.quickDischarge = async function(docId) {
+        if(confirm("Mark this patient as DISCHARGED today?")) {
+            try { 
+                const todayStr = new Date().toISOString().split('T')[0];
+                await updateDoc(doc(db, "patients", docId), {
+                    status: 'Discharged',
+                    dischargeDate: todayStr
+                }); 
+            } catch(error) { alert("Access Denied."); }
+        }
+    };
 
     window.deletePatient = async function(docId) {
         if(confirm("Confirm removal from database?")) {
@@ -470,40 +614,27 @@
         document.getElementById('ward').value = p.ward || 'Medical Ward';
         document.getElementById('disease').value = p.disease || 'Dengue Fever';
         document.getElementById('severity').value = p.severity === 'Standard' ? 'Stable' : p.severity; 
+        document.getElementById('currentStatus').value = p.status || 'Admitted';
+        document.getElementById('dischargeDate').value = p.dischargeDate || '';
         window.openPatientModal(true);
     };
 
-    // STRATEGIC FIX: Export to MS Word (Legal Landscape Mode Configured)
     window.exportToWord = function() {
         let table = document.getElementById("dataTable").cloneNode(true);
         let rows = table.rows;
-        
         for (let i = 0; i < rows.length; i++) {
             if (rows[i].cells.length > 1 && document.body.classList.contains('is-admin')) { 
-                rows[i].deleteCell(-1); // Delete Actions column before export
+                rows[i].deleteCell(-1); 
             }
         }
-
         let html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>";
         html += "<head><meta charset='utf-8'><title>Export HTML to Word</title>";
-        html += "<style>";
-        html += "@page WordSection1 { size: 14.0in 8.5in; mso-page-orientation: landscape; margin: 0.5in; }";
-        html += "div.WordSection1 { page: WordSection1; }";
-        html += "table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; }";
-        html += "th, td { border: 1px solid black; padding: 5px; text-align: left; vertical-align: top; }";
-        html += "th { background-color: #e2e8f0; font-weight: bold; }";
-        html += ".month-divider td { background-color: #e0f2fe; text-align: center; font-weight: bold; font-size: 11pt; }";
-        html += "</style></head><body>";
-        html += "<div class='WordSection1'>";
-        html += "<h2 style='text-align:center; font-family: sans-serif;'>DENGUE PATIENT STATE - CMH SAVAR</h2>";
-        html += table.outerHTML;
-        html += "</div></body></html>";
-
+        html += "<style>@page WordSection1 { size: 14.0in 8.5in; mso-page-orientation: landscape; margin: 0.5in; } div.WordSection1 { page: WordSection1; } table { width: 100%; border-collapse: collapse; font-family: Arial; font-size: 10pt; } th, td { border: 1px solid black; padding: 5px; text-align: left; } th { background-color: #e2e8f0; font-weight: bold; } .month-divider td { background-color: #e0f2fe; text-align: center; font-weight: bold; font-size: 11pt; }</style></head><body>";
+        html += "<div class='WordSection1'><h2 style='text-align:center;'>DENGUE PATIENT STATE - CMH SAVAR</h2>" + table.outerHTML + "</div></body></html>";
         let blob = new Blob(['\ufeff', html], { type: 'application/msword' });
         let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
         let downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
-        
         if (navigator.msSaveOrOpenBlob) { navigator.msSaveOrOpenBlob(blob, 'Dengue_Report_CMH_Savar.doc'); } 
         else { downloadLink.href = url; downloadLink.download = 'Dengue_Report_CMH_Savar.doc'; downloadLink.click(); }
         document.body.removeChild(downloadLink);
@@ -524,17 +655,6 @@
         downloadLink.download = "Dengue_Report_CMH_Savar.csv";
         downloadLink.href = window.URL.createObjectURL(csvFile);
         downloadLink.click();
-    };
-
-    window.copyTableData = function() {
-        let table = document.getElementById("dataTable");
-        let range = document.createRange();
-        range.selectNode(table);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        try { document.execCommand('copy'); alert("Table data copied!"); } 
-        catch (err) { alert("Unable to copy."); }
-        window.getSelection().removeAllRanges();
     };
 </script>
 </body>
